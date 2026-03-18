@@ -1,9 +1,9 @@
 #' @keywords internal
 #' @noRd
-.buildStratifiedFolds <- function(groups, nfold = getOption("DMRsegal.ranking_nfold", 5)) {
+.buildStratifiedFolds <- function(groups, nfold = getOption("DMRsegal.scoring_nfold", 5)) {
     groups <- as.factor(groups)
     if (nlevels(groups) < 2) {
-        stop("Ranking requires at least two classes in '__casecontrol__'.")
+        stop("scoring requires at least two classes in '__casecontrol__'.")
     }
     set.seed(getOption("DMRsegal.random_seed", 42))
     group_folds <- split(seq_along(groups), groups)
@@ -12,7 +12,7 @@
             gsize <- length(group_folds[[g]])
             stop(paste0(
                 "Number of samples in group (", gsize, ") '", g, "' is less than nfold = ", nfold,
-                ". Cannot perform stratified cross-prediction. Reduce nfold using options(DMRsegal.ranking_nfold=", gsize,
+                ". Cannot perform stratified cross-prediction. Reduce nfold using options(DMRsegal.scoring_nfold=", gsize,
                 ") or increase number of samples in this group."
             ))
         }
@@ -27,7 +27,7 @@
 
 #' @keywords internal
 #' @noRd
-.performCrossPrediction <- function(beta_mat, groups, folds = NULL, nfold = getOption("DMRsegal.ranking_nfold", 5)) {
+.performCrossPrediction <- function(beta_mat, groups, folds = NULL, nfold = getOption("DMRsegal.scoring_nfold", 5)) {
     groups <- as.factor(groups)
     if (ncol(beta_mat) != length(groups)) {
         stop(
@@ -36,7 +36,7 @@
         )
     }
     if (nlevels(groups) < 2) {
-        stop("Ranking requires at least two classes in '__casecontrol__'.")
+        stop("scoring requires at least two classes in '__casecontrol__'.")
     }
     if (is.null(folds)) {
         folds <- .buildStratifiedFolds(groups, nfold = nfold)
@@ -651,7 +651,6 @@
 #' @noRd
 .assignDMRBlocksFromScores <- function(
     dmrs,
-    score_col = "score",
     k_neighbors = 5L,
     min_segment_size = 2L,
     block_gap_mode = c("adaptive", "fixed", "none"),
@@ -667,8 +666,8 @@
     if (!inherits(dmrs, "GRanges")) {
         stop("dmrs must be a GRanges object.")
     }
-    if (!(score_col %in% colnames(S4Vectors::mcols(dmrs)))) {
-        stop("score_col '", score_col, "' not found in DMR metadata.")
+    if (!("score" %in% colnames(S4Vectors::mcols(dmrs)))) {
+        stop("Column 'score' not found in DMR metadata.")
     }
     block_gap_mode <- strex::match_arg(block_gap_mode, ignore_case = TRUE)
 
@@ -679,7 +678,7 @@
     details <- list()
 
     chr_values <- as.character(GenomicRanges::seqnames(dmrs))
-    scores <- suppressWarnings(as.numeric(S4Vectors::mcols(dmrs)[[score_col]]))
+    scores <- suppressWarnings(as.numeric(S4Vectors::mcols(dmrs)[["score"]]))
     midpoints <- floor((GenomicRanges::start(dmrs) + GenomicRanges::end(dmrs)) / 2)
     chromosomes <- unique(chr_values)
     p_con <- NULL
@@ -788,9 +787,9 @@
     dmrs
 }
 
-#' Rank DMRs Based on Classification Score
+#' score DMRs Based on Classification Score
 #'
-#' @description Ranks Differentially Methylated Regions (DMRs) based on their ability to
+#' @description scores Differentially Methylated Regions (DMRs) based on their ability to
 #' discriminate between sample groups using cross-validated Support Vector Machine (SVM)
 #' classification. For each DMR, this function performs stratified k-fold cross-prediction
 #' using an RBF kernel SVM and computes a margin-sensitive classification score based on
@@ -829,7 +828,7 @@
 #' @details
 #' The function uses stratified k-fold cross-prediction to ensure balanced representation
 #' of sample groups in each fold. The number of folds can be controlled using the
-#' option "DMRsegal.ranking_nfold" (default is 5). An RBF (Radial Basis Function) kernel
+#' option "DMRsegal.scoring_nfold" (default is 5). An RBF (Radial Basis Function) kernel
 #' SVM is trained on the beta values of CpG sites within each DMR.
 #'
 #' The `score` combines classification correctness and margin confidence,
@@ -846,8 +845,8 @@
 #' # Load pre-computed DMRs
 #' dmrs <- readRDS(system.file("extdata", "example_output.rds", package = "DMRsegal"))
 #'
-#' # Rank DMRs
-#' ranked_dmrs <- rankDMRs(
+#' # score DMRs
+#' scoring_dmrs <- scoreDMRs(
 #'     dmrs = dmrs,
 #'     beta = beta,
 #'     pheno = pheno,
@@ -855,7 +854,7 @@
 #' )
 #'
 #' @export
-rankDMRs <- function(
+scoreDMRs <- function(
     dmrs, beta, pheno, covariates = NULL,
     genome = "hg38", array = "450K", sorted_locs = NULL,
     sample_group_col = "Sample_Group",
@@ -888,14 +887,14 @@ rankDMRs <- function(
     class_values <- unique(pheno[, "__casecontrol__"])
     class_values <- class_values[!is.na(class_values)]
     if (length(class_values) < 2) {
-        stop("Ranking requires at least two classes in '__casecontrol__'.")
+        stop("scoring requires at least two classes in '__casecontrol__'.")
     }
     groups <- pheno[, "__casecontrol__"]
-    nfold <- getOption("DMRsegal.ranking_nfold", 5)
+    nfold <- getOption("DMRsegal.scoring_nfold", 5)
     folds <- .buildStratifiedFolds(groups, nfold = nfold)
     dmr_cpgs <- strsplit(as.character(mcols(dmrs)$cpgs), split = ",", fixed = TRUE)
     covariate_model <- .prepareCovariateModel(pheno = pheno, covariates = covariates)
-    .log_step("Transforming beta values for DMR ranking", level = 2)
+    .log_step("Transforming beta values for DMR scoring", level = 2)
     dmrs_m <- .transformBeta(beta_handler$getBeta(
         row_names = unique(unlist(dmr_cpgs)),
         col_names = beta_col_names
@@ -944,7 +943,7 @@ rankDMRs <- function(
         # check if version of progressr is equal or higher than >= 0.17.0-9002, otherwise p_con will not be used
 
         if (utils::packageVersion("progressr") >= "0.17.0-9002") {
-            p_con <- progressr::progressor(steps = length(dmrs), message = "Ranking DMRs..")
+            p_con <- progressr::progressor(steps = length(dmrs), message = "scoring DMRs..")
         }
     }
     .log_step("Computing cross-validated classification scores for DMRs", level = 2)
@@ -954,12 +953,10 @@ rankDMRs <- function(
     .log_success("Cross-validated classification scores computed", level = 2)
     mcols(dmrs)$score <- as.numeric(cv_metrics[, "score"])
     mcols(dmrs)$cv_accuracy <- as.numeric(cv_metrics[, "cv_accuracy"])
-    mcols(dmrs)$rank <- as.numeric(as.factor(rank(-mcols(dmrs)$score, ties.method = "first")))
     .log_step("Assigning DMRs to blocks based on smoothed score profiles", level = 2)
 
     dmrs <- .assignDMRBlocksFromScores(
         dmrs = dmrs,
-        score_col = "score",
         block_gap_mode = block_gap_mode,
         block_gap_fixed_bp = block_gap_fixed_bp,
         block_gap_quantile = block_gap_quantile,
@@ -971,7 +968,7 @@ rankDMRs <- function(
     )
     .log_success("DMRs assigned to blocks", level = 2)
 
-    dmrs <- dmrs[order(mcols(dmrs)$rank)]
+    dmrs <- dmrs[order(mcols(dmrs)$score, decreasing = TRUE)]
     if (df_provided) {
         dmrs <- convertToDataFrame(dmrs)
     }
