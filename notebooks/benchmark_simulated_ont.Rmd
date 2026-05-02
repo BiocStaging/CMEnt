@@ -1,14 +1,11 @@
 ---
-title: "CMEnt vs DMRcate vs dmrseq vs hummingbird on Simulated ONT BSseq Data"
+title: "Benchmarking CMEnt on Simulated ONT Data"
+subtitle: "CMEnt vs DMRcate vs dmrseq vs hummingbird"
 author: "CMEnt Package"
 date: "`r Sys.Date()`"
 output:
     BiocStyle::html_document:
         code_folding: hide
-vignette: >
-  %\VignetteIndexEntry{CMEnt vs DMRcate vs dmrseq vs hummingbird on Simulated ONT BSseq Data}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
@@ -214,9 +211,9 @@ knitr::kable(
 #### Adjusting parameters for NGS simulation
 ```{r}
 min_seeds <- 1L
-min_sites <- 5L
+min_sites <- 50L
 max_pval <- 0.05
-pval_mode  <- "parametric"
+testing_mode  <- "parametric"
 ext_site_delta_beta  <- 0.2
 max_bridge_seeds_gaps <- 1L
 max_bridge_extension_gaps <- 3L
@@ -399,7 +396,7 @@ if (!file.exists(cment_file)) {
         genome = "hg38",
         array = "NULL",
         entanglement = "weak",
-        pval_mode = pval_mode,
+        testing_mode = testing_mode,
         max_bridge_seeds_gaps = max_bridge_seeds_gaps,
         max_bridge_extension_gaps = max_bridge_extension_gaps,
         min_seeds = min_seeds,

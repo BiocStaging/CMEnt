@@ -1,14 +1,11 @@
 ---
-title: "CMEnt vs comb-p, probeLasso, DMRcate, and Bumphunter"
+title: "Benchmarking CMEnt on True Microarray Data"
+subtitle: "CMEnt vs comb-p, probeLasso, DMRcate, and Bumphunter"
 author: "CMEnt Package"
 date: "`r Sys.Date()`"
 output: 
     BiocStyle::html_document:
         code_folding: hide
-vignette: >
-  %\VignetteIndexEntry{CMEnt vs comb-p, probeLasso, DMRcate, and Bumphunter}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
