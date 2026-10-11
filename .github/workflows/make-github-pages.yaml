@@ -37,6 +37,13 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+        with:
+          ref: master
+
+      - name: Check out notebooks from notebooks branch
+        run: |
+          git fetch --no-tags --depth=1 origin notebooks
+          git restore --source=FETCH_HEAD --worktree -- notebooks
 
       - name: Install current package source
         run: |
