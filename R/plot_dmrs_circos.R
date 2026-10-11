@@ -2434,10 +2434,6 @@ plotAutoDMRsCircos <- function(dmrs,
                     error = function(e) NULL
                 )
                 if (!is.null(bundled_cytoband)) {
-                    .log_warn(
-                        "Failed to download cytoband data: ", e$message,
-                        ". Using bundled hg19 cytoband data."
-                    )
                     return(bundled_cytoband)
                 }
             }

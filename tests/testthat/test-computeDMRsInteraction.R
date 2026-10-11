@@ -556,13 +556,17 @@ test_that("extractDMRMotifs ignores seed windows not centered on C", {
         .package = "CMEnt"
     )
 
-    out <- suppressWarnings(extractDMRMotifs(
-        dmrs,
-        genome = "hg38",
-        array = NULL,
-        beta_locs = beta_locs,
-        motif_site_flank_size = motif_site_flank_size
-    ))
+    expect_message(
+        out <- extractDMRMotifs(
+            dmrs,
+            genome = "hg38",
+            array = NULL,
+            beta_locs = beta_locs,
+            motif_site_flank_size = motif_site_flank_size
+        ),
+        "2 motif window(s) were not centered on C",
+        fixed = TRUE
+    )
 
     consensus_seq <- as.character(out$consensus_seq[[1]])
     expect_equal(consensus_seq, "AAAAACAAAAAA")

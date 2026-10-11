@@ -123,8 +123,16 @@ test_that("weak entanglement reports the best p-value that caused disconnection"
 test_that("buildDMRs accepts weak entanglement on deterministic synthetic data", {
     fixture <- makeSyntheticBuildDMRsFixture()
 
-    strong <- runSyntheticBuildDMRs(fixture, entanglement = "strong")
-    weak <- runSyntheticBuildDMRs(fixture, entanglement = "weak")
+    expect_message(
+        strong <- runSyntheticBuildDMRs(fixture, entanglement = "strong"),
+        "No DMRs remain after filtering based on min_seeds.",
+        fixed = TRUE
+    )
+    expect_message(
+        weak <- runSyntheticBuildDMRs(fixture, entanglement = "weak"),
+        "No DMRs remain after filtering based on min_seeds.",
+        fixed = TRUE
+    )
 
     expect_s4_class(weak, "GRanges")
     expect_identical(S4Vectors::mcols(weak)$id, S4Vectors::mcols(strong)$id)

@@ -84,14 +84,21 @@ test_that("custom BED preprocessing returns locations without reparsing tabix ou
         genomicLocsFromTabix = function(...) stop("tabix output should not be reparsed"),
         .package = "CMEnt"
     )
-    ret <- readCustomMethylationBedData(
+    preprocessing_messages <- capture_messages(ret <- readCustomMethylationBedData(
         bed_file,
         pheno = fixture$pheno,
         genome = "hg38",
         chrom_col = "chrom",
         start_col = "start",
         njobs = 2
-    )
+    ))
+
+    if (CMEnt:::.tabixToolsAvailable()) {
+        expect_length(preprocessing_messages, 0L)
+    } else {
+        expect_length(preprocessing_messages, 1L)
+        expect_match(preprocessing_messages[[1L]], "tabix/bgzip/sort tools not found in PATH", fixed = TRUE)
+    }
 
     expect_true(file.exists(ret$beta_file))
     if (!is.null(ret$tabix_file)) {
@@ -116,13 +123,17 @@ test_that("custom BED preprocessing falls back when tabix tools are unavailable"
         convertBetaToTabix = function(...) stop("tabix conversion should not run"),
         .package = "CMEnt"
     )
-    ret <- suppressWarnings(readCustomMethylationBedData(
-        bed_file,
-        pheno = fixture$pheno,
-        genome = "hg38",
-        chrom_col = "chrom",
-        start_col = "start"
-    ))
+    expect_message(
+        ret <- readCustomMethylationBedData(
+            bed_file,
+            pheno = fixture$pheno,
+            genome = "hg38",
+            chrom_col = "chrom",
+            start_col = "start"
+        ),
+        "tabix/bgzip/sort tools not found in PATH",
+        fixed = TRUE
+    )
 
     expect_null(ret$tabix_file)
     expect_true(file.exists(ret$beta_file))

@@ -187,7 +187,7 @@ test_that(".testConnectivityBatch marks edges as failing when empirical permutat
     expect_true(all(ret_strong$reason == "pval>max_pval"))
     expect_true(all(ret_strong$pval == 1))
 
-    ret_weak <- suppressWarnings(CMEnt:::.testConnectivityBatch(
+    weak_messages <- capture_messages(ret_weak <- CMEnt:::.testConnectivityBatch(
         sites_beta = sites_beta,
         group_inds = group_inds,
         pheno = pheno,
@@ -200,6 +200,9 @@ test_that(".testConnectivityBatch marks edges as failing when empirical permutat
         mid_p = FALSE
     ))
 
+    expect_length(weak_messages, 2L)
+    expect_match(weak_messages[[1L]], "empirical p-values for group 'g1'", fixed = TRUE)
+    expect_match(weak_messages[[2L]], "empirical p-values for group 'g2'", fixed = TRUE)
     expect_true(all(!ret_weak$connected))
     expect_true(all(grepl("pval>max_pval", ret_weak$reason, fixed = TRUE)))
 })
