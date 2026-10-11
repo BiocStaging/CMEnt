@@ -300,7 +300,7 @@ The information includes:
 - Selected beta values of the DMRs (at most 5 sites per DMR, scoring by absolute delta-beta, are shown)
 - The motif-based interactions between DMRs, with links direction going from higher scoring to lower scoring (at most 120 interactions groups are shown)
 - The JASPAR annotation of the motif-based groups, if available, on the legend.
-```{r circos_plot, eval=TRUE, fig.height=10, fig.width=14, dpi=300, fig.retina=1.5}
+```{r circos_plot, eval=TRUE, fig.height=10, fig.width=14, dpi=300, fig.retina=1}
 circos_dmrs <- dmrs
 circos_summary_plotted <- FALSE
 
