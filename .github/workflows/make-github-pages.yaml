@@ -42,6 +42,7 @@ jobs:
 
       - name: Check out notebooks from notebooks branch
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git fetch --no-tags --depth=1 origin notebooks
           git restore --source=FETCH_HEAD --worktree -- notebooks
 
