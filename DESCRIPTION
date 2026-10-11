@@ -113,7 +113,6 @@ Suggests:
     DMRcate,
     doParallel,
     bumphunter,
-    ChAMP,
     tidyr,
     scales,
     UpSetR,
