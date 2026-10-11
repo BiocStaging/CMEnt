@@ -382,6 +382,16 @@ test_that("plotDMRsCircos skips non-drawable gneg-only ideograms without warning
             )
         }
     )
+    heatmap_bed <- NULL
+    draw_heatmap <- circlize::circos.genomicHeatmap
+    stub(
+        plotDMRsCircos,
+        "circlize::circos.genomicHeatmap",
+        function(bed, ...) {
+            heatmap_bed <<- bed
+            draw_heatmap(bed = bed, ...)
+        }
+    )
 
     expect_no_warning(
         plotDMRsCircos(
@@ -393,6 +403,11 @@ test_that("plotDMRsCircos skips non-drawable gneg-only ideograms without warning
             region = "chr1:50-250"
         )
     )
+    expect_identical(colnames(heatmap_bed), c("chr", "start", "end", "S1"))
+    expect_equal(as.character(heatmap_bed$chr), rep("chr1:50-250", 2L))
+    expect_equal(heatmap_bed$start, c(100, 140))
+    expect_equal(heatmap_bed$end, c(100, 140))
+    expect_equal(heatmap_bed$S1, c(0.4, 0.5))
 })
 
 test_that("plotDMRsCircos reuses precomputed interactions without extracting motifs again", {

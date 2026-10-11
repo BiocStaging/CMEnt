@@ -1806,14 +1806,11 @@ plotDMRsCircos <- function(
 
     heatmap_df <- heatmap_data$heatmap_df
     if (!is.null(region_df) && !is.null(heatmap_df)) {
-        heatmap_df <- .convertToDataFrame(
-            .filterDMRsByScopeForCircos(
-                .convertToGRanges(heatmap_df, genome),
-                chromosomes = requested_chrs,
-                region_df = region_df
-            )
+        heatmap_df <- .scopeCircosRangesDf(
+            heatmap_df,
+            chromosomes = requested_chrs,
+            region_df = region_df
         )
-        heatmap_df <- heatmap_df[-c(4, 5)]
     }
     reduced_pheno <- heatmap_data$reduced_pheno
     if (!is.null(heatmap_df) && nrow(heatmap_df) > 1) {
