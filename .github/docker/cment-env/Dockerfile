@@ -60,10 +60,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxml2-dev \
     pandoc \
     ghostscript \
+    unzip \
     texlive-latex-base \
     texlive-fonts-recommended \
-    texlive-fonts-extra \
-    texlive-latex-extra
+    texlive-latex-extra && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# R's PDF manual uses Inconsolata; install only its upstream TDS archive (1.121).
+RUN curl -fsSL https://mirrors.ctan.org/install/fonts/inconsolata.tds.zip -o /tmp/inconsolata.tds.zip && \
+    echo "d8d67b93f0510debc527fcb627e8610533287005295d3f62660461a41b7e47f3  /tmp/inconsolata.tds.zip" | sha256sum -c - && \
+    mkdir -p /usr/local/share/texmf && \
+    unzip -q /tmp/inconsolata.tds.zip -d /usr/local/share/texmf && \
+    mktexlsr && \
+    updmap-sys --enable Map=zi4.map && \
+    rm /tmp/inconsolata.tds.zip
 
 # Install tabix (through samtools) from the builder stage
 COPY --link --from=builder /opt/samtools/bin/* /usr/local/bin/
@@ -71,20 +82,26 @@ COPY --link --from=builder /opt/samtools/lib/* /usr/local/lib/
 
 COPY .github/docker/cment-env/docker.Rprofile .Rprofile
 ENV R_PROFILE_USER=/home/root/.Rprofile
-RUN mkdir -p "$HOME/.cache/R/ExperimentHub" && \
+# Refresh cleaned indexes explicitly: bspm can skip updates for five minutes.
+RUN apt-get update && \
+    mkdir -p "$HOME/.cache/R/ExperimentHub" && \
     for i in {1..5}; do \
         Rscript -e "install.packages('BiocManager'); BiocManager::install(version='${BIOCONDUCTOR_VERSION}', ask=FALSE)" && \
         break || sleep 30; \
     done && \
-    rm -rf /tmp/downloaded_packages
+    apt-get clean && \
+    rm -rf /tmp/downloaded_packages /var/lib/apt/lists/*
 
 COPY .github/docker/cment-env/cran-requirements.txt cran-requirements.txt
 COPY .github/docker/cment-env/bioc-requirements.txt bioc-requirements.txt
 COPY .github/docker/cment-env/install-requirements.R install-requirements.R
 
-RUN Rscript install-requirements.R
+RUN apt-get update && \
+    Rscript install-requirements.R && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 # Install additional packages that are not in the requirements files but are needed for testing and development
-RUN Rscript -e "install_deps(packages=c('covr', 'xml2', 'rcmdcheck', 'mockery', 'knitr', 'pkgdown', 'rmarkdown', 'rcmdcheck', 'devtools', 'magick'), bioc_packages=c('BiocCheck', 'IlluminaHumanMethylation450kanno.ilmn12.hg19', 'IlluminaHumanMethylationEPICanno.ilm10b4.hg19', 'BSgenome.Hsapiens.UCSC.hg19'))"
-
-RUN apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    Rscript -e "install_deps(packages=c('covr', 'xml2', 'rcmdcheck', 'mockery', 'knitr', 'pkgdown', 'rmarkdown', 'rcmdcheck', 'devtools', 'magick'), bioc_packages=c('BiocCheck', 'IlluminaHumanMethylation450kanno.ilmn12.hg19', 'IlluminaHumanMethylationEPICanno.ilm10b4.hg19', 'BSgenome.Hsapiens.UCSC.hg19'))" && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*

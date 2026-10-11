@@ -128,6 +128,7 @@ jobs:
             "${{ inputs.docker_dir }}/cran-requirements.txt" \
             "${{ inputs.docker_dir }}/bioc-requirements.txt" \
             "${{ inputs.docker_dir }}/install-requirements.R" \
+            "${{ inputs.docker_dir }}/docker.Rprofile" \
             "${{ inputs.dockerfile }}" \
             | sha256sum | cut -d ' ' -f 1)
 
