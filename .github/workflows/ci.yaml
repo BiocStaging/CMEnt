@@ -61,7 +61,7 @@ env:
 jobs:
   gate:
     if: github.repository == 'CMG-UA/CMEnt'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       run_ci: "true"
     steps:

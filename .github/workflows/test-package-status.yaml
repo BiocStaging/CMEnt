@@ -19,7 +19,7 @@ permissions:
 jobs:
   mirror-test-package:
     name: Mirror test-package result
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Mirror reusable workflow result

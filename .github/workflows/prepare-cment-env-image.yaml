@@ -36,7 +36,7 @@ permissions:
 
 jobs:
   generate-requirements:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: rocker/r2u:24.04
 
     outputs:
@@ -142,7 +142,7 @@ jobs:
             ${{ inputs.docker_dir }}/bioc-requirements.txt
 
   check-image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: generate-requirements
 
     outputs:
@@ -171,7 +171,7 @@ jobs:
           fi
 
   build-image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - generate-requirements
       - check-image

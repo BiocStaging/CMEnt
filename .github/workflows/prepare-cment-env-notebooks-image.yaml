@@ -61,7 +61,7 @@ jobs:
       image_suffix: ${{ inputs.base_image_suffix }}
 
   init-params:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: rocker/r2u:24.04
     needs: prepare-base-image
 
@@ -98,7 +98,7 @@ jobs:
           echo "requirements_hash=${HASH}" >> "$GITHUB_OUTPUT"
 
   check-image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: init-params
 
     outputs:
@@ -127,7 +127,7 @@ jobs:
           fi
 
   build-image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - init-params
       - check-image

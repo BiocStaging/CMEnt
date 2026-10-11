@@ -23,7 +23,7 @@ jobs:
       docker_dir: ".github/docker/cment-env-notebooks"
       image_suffix: "cment-env-notebooks"
   render:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     needs:
       - prepare-image
@@ -101,7 +101,7 @@ jobs:
           path: "_site"
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: render
 
     environment:
