@@ -21,6 +21,8 @@ reference:
   - sortBetaFileByCoordinates
   - readCustomMethylationBedData
   - augmentBSSeq
+  - reduceBSseqAroundSeeds
+  - sparsifySeeds
   - loadExampleInputData
   - getSortedGenomicLocs
   - orderByLoc
